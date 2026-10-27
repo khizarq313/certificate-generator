@@ -70,6 +70,7 @@ export async function exportPdf(layout: CertificateLayout, details: CertificateD
       if (!asset) throw new Error(`Missing font bytes for ${operation.fontId}.`);
       let font = embeddedFonts.get(operation.fontId);
       if (!font) {
+        // WOFF subsets are converted into valid PDF font programs. WOFF2 subsets can lose glyph outlines.
         font = await document.embedFont(asset.bytes, { subset: true, customName: `${subsetTags[operation.fontId]}+${asset.parsed.postscriptName}` });
         embeddedFonts.set(operation.fontId, font);
       }

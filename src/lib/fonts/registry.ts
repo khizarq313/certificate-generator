@@ -1,10 +1,10 @@
-import cormorant400 from '@fontsource/cormorant-garamond/files/cormorant-garamond-latin-400-normal.woff2?url';
-import dmSans400 from '@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff2?url';
-import dmSans600 from '@fontsource/dm-sans/files/dm-sans-latin-600-normal.woff2?url';
-import greatVibes400 from '@fontsource/great-vibes/files/great-vibes-latin-400-normal.woff2?url';
-import playfair600 from '@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff2?url';
-import robotoSlab700 from '@fontsource/roboto-slab/files/roboto-slab-latin-700-normal.woff2?url';
-import unifraktur700 from '@fontsource/unifrakturcook/files/unifrakturcook-latin-700-normal.woff2?url';
+import cormorant400 from '@fontsource/cormorant-garamond/files/cormorant-garamond-latin-400-normal.woff?url';
+import dmSans400 from '@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff?url';
+import dmSans600 from '@fontsource/dm-sans/files/dm-sans-latin-600-normal.woff?url';
+import greatVibes400 from '@fontsource/great-vibes/files/great-vibes-latin-400-normal.woff?url';
+import playfair600 from '@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff?url';
+import robotoSlab700 from '@fontsource/roboto-slab/files/roboto-slab-latin-700-normal.woff?url';
+import unifraktur700 from '@fontsource/unifrakturcook/files/unifrakturcook-latin-700-normal.woff?url';
 
 export const FONT_IDS = [
   'cormorant-400', 'dm-sans-400', 'dm-sans-600',
