@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" fill="none">
+  <defs>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#88827b" stop-opacity=".28"/><stop offset=".43" stop-color="#88827b" stop-opacity="0"/><stop offset=".57" stop-color="#88827b" stop-opacity="0"/><stop offset="1" stop-color="#88827b" stop-opacity=".24"/></linearGradient>
+    <mask id="clearLogo"><rect width="297" height="210" fill="white"/><rect x="133" y="10" width="31" height="21" rx="1" fill="black"/></mask>
+  </defs>
+  <g mask="url(#clearLogo)" stroke="url(#fade)" stroke-width=".55">
+    <path d="M-10 38C31 39 38 7 76-4M-10 44C35 45 44 11 82-4M-10 50C39 51 50 15 88-4M-10 56C43 57 56 19 94-4M-10 62C47 63 62 23 100-4M-10 68C51 69 68 27 106-4M-10 74C55 75 74 31 112-4M-10 80C59 81 80 35 118-4M-10 86C63 87 86 39 124-4M-10 92C67 93 92 43 130-4"/>
+    <path d="M307 169C266 168 259 200 221 211M307 163C262 162 253 196 215 211M307 157C258 156 247 192 209 211M307 151C254 150 241 188 203 211M307 145C250 144 235 184 197 211M307 139C246 138 229 180 191 211M307 133C242 132 223 176 185 211M307 127C238 126 217 172 179 211M307 121C234 120 211 168 173 211M307 115C230 114 205 164 167 211"/>
+  </g>
+</svg>
