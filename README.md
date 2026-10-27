@@ -1,48 +1,115 @@
 # CertifyX — Certificate Studio
 
-Responsive local-first certificate generator for SIES College of Management Studies (SIESCOMS). The supplied Stitch screens and certificate references inform the studio layout, certificate styling, and responsive behavior.
+CertifyX creates print-ready A4 landscape certificates for SIES College of Management Studies (SIESCOMS). It is a local-first React 18, TypeScript, and Vite app. Certificate data stays in the current browser; there is no backend or institutional verification service.
 
 ## Setup
 
-Install Node.js 20+ and npm, then run:
+Use Node.js 20.9 or newer and npm:
 
 ```sh
 npm install
 npm run dev
 ```
 
-Scripts: `npm run dev`, `npm run build`, and `npm run preview`.
+The Vite app runs at `http://localhost:5173`.
 
-## Features
+## Scripts
 
-- Dashboard stats from local certificate history, with an accurate empty state.
-- Four-step certificate flow: details, template selection, preview, and export.
-- Eight A4 landscape certificate compositions, with locally bundled typefaces.
-- Required-field validation, suggested wording, local reference ID generation, optional second signer, and signature upload resized to 800 px.
-- Fixed-size export stage for image-based PDF output and a print stylesheet that keeps text selectable.
-- Local history with search, reopen, duplicate, download again, and delete.
-- Draft and history data saved in browser localStorage; history is capped at 20 entries.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the local app. |
+| `npm run typecheck` | Run strict TypeScript checks. |
+| `npm run lint` | Run TypeScript, React Hooks, and JSX accessibility lint rules. |
+| `npm run test` | Run Vitest unit tests. |
+| `npm run test:e2e` | Run Playwright flows in Chromium, Firefox, and WebKit. Build first; the tests use the production preview server. |
+| `npm run test:parity` | Render sample and worst-case PDFs and compare them with the SVG preview at 150 dpi. |
+| `npm run build` | Typecheck and create the production bundle. |
+| `npm run preview` | Serve the production bundle locally. |
 
-## Templates
+Playwright browsers must be installed once with `npx playwright install chromium firefox webkit`.
 
-The eight built-in compositions are White & Gold Appreciation, Blue Geometric Achievement, Black Gold Formal, Simple Gold Completion, Cream Aesthetic Completion, White Gold Ornate, Gold Black Ornate, and Beige Gold Participation. They are based on the eight certificate references supplied with the request. All use the shared certificate data model and the same fixed-size landscape A4 canvas.
+## Certificate flow
 
-To add a design, add one metadata entry to the `templates` array in `src/App.tsx`, add its certificate and mini-preview styles to `src/style.css`, and choose the desired bundled certificate font. Keep the logo position fixed and preserve the safe inset around the artboard.
+The app has three routes:
 
-## Official SIESCOMS identity
+1. `/create/template` — choose one of eight approved designs from an accessible radio grid.
+2. `/create/details` — enter the certificate type, recipient, description, event, date, signatories, and optional reference ID.
+3. `/create/export` — review the final certificate and download or print the generated PDF.
 
-The official SIESCOMS logo is bundled at `public/assets/siescoms-logo.jpg`. It was downloaded from the [official SIESCOMS website](https://siescoms.edu.in/images/logo.jpg). The certificates use the verified institutional name, establishment year (1995), and Nerul, Navi Mumbai location. The [official About Us page](https://siescoms.edu.in/about_us) verifies the establishment year and campus context; the [official Contact Us page](https://siescoms.edu.in/contact-us) provides the full address: Sri Chandrasekarendra Saraswati Vidyapuram, Plot I-E, Sector V, Nerul, Navi Mumbai - 400706.
+The recipient-name form includes **Leave the name blank**. This prints a 180 mm line where a recipient can handwrite their name. The repeat-name flow keeps other details read-only, and **Edit certificate** restores the complete form.
 
-## PDF and print
+## Starting field limits
 
-Download PDF captures the certificate on an unscaled 1123 × 794 px export stage and places it on a full-bleed A4 landscape PDF. Browser Print uses a dedicated print view with selectable text. Some browsers require “Background graphics” in the print dialog.
+| Field | Limit |
+| --- | --- |
+| Custom certificate type | 3–24 characters |
+| Recipient name | 2–40 characters |
+| Description | 10–200 characters; up to three rendered lines |
+| Event name | 3–70 characters |
+| Signatory name | 2–32 characters |
+| Designation | 2–40 characters |
+| Reference ID | Up to 28 characters: letters, numbers, `/`, `_`, `-` |
+| Event date | 2000-01-01 through today plus 366 days |
 
-The app has no backend. Drafts and history stay in this browser profile only; they are local drafts, not official institutional records. A generated certificate ID is a local reference, not an official record number.
+The initial recipient maximum was reduced from 45 to 40 characters after the widest-glyph fixture exceeded the one-line safe width at the 24 pt minimum. The layout engine can hard-break a remaining unbroken token as a last resort and records a warning.
 
-## Design deviations and limitations
+## Layout and PDF rendering
 
-- The supplied Stitch references include an institutional sign-in view. This app starts at the studio dashboard because the product brief excludes backend authentication and secrets.
-- The certificate designs share one rendering component and stylesheet instead of using separate template folders. Adding a template currently requires metadata and CSS edits.
-- Official logo and identity details are present, but the app does not claim that certificates are authenticated or institutionally issued.
-- Automated unit and end-to-end test suites are not configured. TypeScript compilation, production build, manual browser workflow checks, responsive overflow checks, PDF export, print layout, and npm audit were run during implementation.
-- Browser print behavior varies; check final output on the target browsers and printers.
+All templates share [layoutGrid.ts](./src/lib/layout/layoutGrid.ts), a 297 × 210 mm coordinate grid with fixed baselines for the institution line, heading, recipient, description, event, signers, and reference ID. [buildLayout.ts](./src/lib/layout/buildLayout.ts) measures text with parsed self-hosted font files and returns a flat list of draw operations. It checks text bounds, text overlap, the logo exclusion zone, and the required art clear zone above the logo.
+
+The same layout object feeds [CertificateSvg.tsx](./src/components/CertificateSvg.tsx) for the on-screen preview and [exportPdf.ts](./src/lib/pdf/exportPdf.ts) for the PDF. PDF text and rules are vector operations; only template artwork, the official logo, and uploaded signatures are raster images. Template SVG artwork is rasterized with transparency at 3508 × 2480 pixels (300 dpi), cached by template, and embedded behind selectable text. Fonts are subset-embedded with `@cantoo/pdf-lib` and `@cantoo/fontkit`. PDF metadata uses the SIESCOMS author and CertifyX creator. Print opens this same generated PDF blob in a hidden iframe and falls back to a new tab.
+
+The preview waits for the same Latin-subset font files used for PDF measurement. The PDF library is loaded on the export step and prefetched when idle. Font metrics are loaded before the first certificate preview so text fitting and export use the same parsed font data.
+
+## Templates and artwork
+
+The eight template specifications are in [registry.ts](./src/templates/registry.ts), and the text-free SVG artwork lives in `src/templates/art/`. Artwork is authored as vector strokes and shapes; it contains no wording, sample logos, or seals. Template cards use the real certificate SVG renderer.
+
+To add a design:
+
+1. Add a text-free SVG under `src/templates/art/` and preserve the centered logo clear zone.
+2. Add its `TemplateSpec` entry and asset import in `src/templates/registry.ts`.
+3. Add the ID to `TEMPLATE_IDS` in `src/features/certificate/types.ts` and provide its font roles and colors.
+4. Add a fixture to `tests/unit/layout.test.ts` and include it in the Playwright parity matrix.
+
+The artwork is hand-authored from the supplied visual references. It does not include text from the samples. The elaborate scrollwork and filigree are vector interpretations rather than traced outlines.
+
+## Official logo
+
+The source image is kept at `design/source/siescoms-logo.jpg`. The app uses `public/assets/siescoms-logo.png`, generated by `scripts/process-logo.mjs`:
+
+```sh
+node scripts/process-logo.mjs --check
+```
+
+The script derives alpha from the off-white matte, restores edge color to avoid halos, and creates a four-times composite check on white, cream, and grey. The source is 233 × 100 pixels, below the recommended 390 × 165 pixels. The PNG keeps native dimensions; it is not upscaled.
+
+To replace the logo, put the approved source JPG at `design/source/siescoms-logo.jpg`, rerun the script, inspect `node_modules/.cache/certifyx-logo-background-check.png`, and verify the output on a certificate preview.
+
+## Draft storage
+
+The versioned draft is saved at `certifyx:v2:draft` and debounced by about 300 ms. Signature images are stored separately in `certifyx:v2:sig:1` and `certifyx:v2:sig:2`, with background preferences in separate keys. The app restores only validated v2 drafts, ignores malformed or legacy drafts, and keeps operating in memory if browser storage is blocked or full.
+
+Exit clears every `certifyx:` key plus the old `certifyx-draft` and `certifyx-history` keys, resets in-memory state, revokes object URLs, and replaces the route with `/`.
+
+## Project structure
+
+```text
+src/app/                    Router, page shell, route guards, error boundary
+src/features/certificate/   Types, limits, validation, persistence, and pages
+src/templates/              Eight template specs and text-free SVG artwork
+src/lib/layout/             Shared millimeter grid and measured layout engine
+src/lib/fonts/              Self-hosted font files and parsed metric registry
+src/lib/pdf/                PDF export and art raster cache
+src/lib/images/             Signature processing and data URL helpers
+src/components/             Shared field, modal, signature, and SVG components
+tests/unit/                 Validation, storage, layout, font, and image tests
+tests/e2e/                  Playwright user-flow and PDF parity tests
+```
+
+## Known limits
+
+- Fonts are self-hosted Latin subsets. Unsupported glyphs are reported inline and block export; emoji and Devanagari are not silently substituted.
+- The low-resolution official JPG sets the logo’s maximum sharpness in print.
+- The ornament vectors are hand-authored interpretations; they are not traced from the PNG references.
+- Drafts are local convenience data, not official SIESCOMS records or authenticated certificates.
